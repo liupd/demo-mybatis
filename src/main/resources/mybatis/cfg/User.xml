@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hong.mybatis.inter.IUserOperator">
+    <select id="selectUserByID" parameterType="int" resultType="User">
+        select * from `user` where id=#{id}
+    </select>
+
+    <resultMap id="resultListUser" type="User">
+        <id column="id" property="id"/>
+        <result column="userName" property="userName"/>
+        <result column="userAge" property="userAge"/>
+        <result column="userAddress" property="userAddress"/>
+    </resultMap>
+
+    <select id="selectUsers" parameterType="string" resultMap="resultListUser">
+        select * from user where userName like #{userName}
+    </select>
+
+    <insert id="addUser" parameterType="com.hong.mybatis.model.User" useGeneratedKeys="true" keyProperty="id">
+        insert into user(userName, userAge, userAddress) values(#{userName}, #{userAge}, #{userAddress})
+    </insert>
+
+    <update id="updateUser" parameterType="User">
+        update user set userName=#{userName}, userAge=#{userAge}, userAddress=#{userAddress} where id=#{id}
+    </update>
+
+    <delete id="deleteUser" parameterType="User">
+        delete from user where id=#{id}
+    </delete>
+
+    <resultMap id="resultUserArticleList" type="Article">
+        <id column="aid" property="id"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <association property="user" javaType="User" resultMap="resultListUser"/>
+    </resultMap>
+
+    <select id="getUserArticles" resultType="list" resultMap="resultUserArticleList">
+        select user.id, user.userName, user.userAge, user.userAddress, article.id aid, article.title, article.content
+         from user, article where user.id=article.userid and user.id=${id} limit ${offset},${pageSize}
+    </select>
+
+    <select id="getUserArticleTotal" resultType="integer">
+        select count(*) from user, article where user.id=article.userid and user.id=${id}
+    </select>
+</mapper>

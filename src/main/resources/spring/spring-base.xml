@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:component-scan base-package="com.hong">
+        <context:include-filter type="regex" expression="..*.model.*"/>
+        <context:include-filter type="regex" expression="..*.inter.*"/>
+        <context:include-filter type="regex" expression="..*.service.impl.*"/>
+    </context:component-scan>
+
+    <bean id="propertyConfig" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="location">
+            <value>classpath:database/database.properties</value>
+        </property>
+    </bean>
+
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="${jdbc.driver_class}" />
+        <property name="jdbcUrl" value="${jdbc.url}" />
+        <property name="user" value="${jdbc.username}" />
+        <property name="password" value="${jdbc.password}" />
+        <property name="minPoolSize" value="${jdbc.min_pool_size}" />
+        <property name="maxPoolSize" value="${jdbc.max_pool_size}" />
+        <property name="initialPoolSize" value="${jdbc.init_pool_size}" />
+        <property name="maxIdleTime" value="${jdbc.max_idle_time}" />
+
+        <!--当连接池中的连接耗尽的时候c3p0一次同时获取的连接数。Default: 3 -->
+        <property name="acquireIncrement" value="${jdbc.acquire_increment}" />
+
+        <!--定义在从数据库获取新连接失败后重复尝试的次数。Default: 30 -->
+        <property name="acquireRetryAttempts" value="${jdbc.acquire_retry_attempts}" />
+
+        <!--两次连接中间隔时间，单位毫秒。Default: 1000 -->
+        <property name="acquireRetryDelay" value="${jdbc.acquire_retry_delay}" />
+
+        <!--如果设为true那么在取得连接的同时将校验连接的有效性。Default: false -->
+        <property name="testConnectionOnCheckin" value="${jdbc.test_connenction_on_checkin}" />
+
+        <!--c3p0将建一张名为C3P0_TEST_TABLE的空表，并使用其自带的查询语句进行测试。Default: null-->
+        <property name="automaticTestTable" value="${jdbc.automatic_test_table}" />
+
+        <!--每18000秒检查所有连接池中的空闲连接。Default: 0 -->
+        <property name="idleConnectionTestPeriod" value="${jdbc.idle_connection_test_period}" />
+
+        <!--当连接池用完时客户端调用getConnection()后等待获取新连接的时间，超时后将抛出
+              SQLException,如设为0则无限期等待。单位毫秒。Default: 0 -->
+        <property name="checkoutTimeout" value="${jdbc.checkout_timeout}" />
+        <property name="autoCommitOnClose" value="true"/>
+    </bean>
+
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="configLocation" value="classpath:mybatis/Configuration.xml"/>
+        <property name="mapperLocations" value="classpath:mybatis/cfg/*.xml"/>
+    </bean>
+
+    <!--<bean id="userMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">-->
+        <!--<property name="sqlSessionFactory" ref="sqlSessionFactory"/>-->
+        <!--<property name="mapperInterface" value="com.hong.mybatis.inter.IUserOperator"/>-->
+    <!--</bean>-->
+
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.hong.mybatis.inter"/>
+    </bean>
+</beans>
